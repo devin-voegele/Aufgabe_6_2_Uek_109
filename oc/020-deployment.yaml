@@ -16,6 +16,13 @@ spec:
       labels:
         app: html-openshift-app
     spec:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi
       containers:
       - name: html-openshift-app
         image: ghcr.io/devin-voegele/html-openshift-app:v1
