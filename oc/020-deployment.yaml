@@ -16,20 +16,21 @@ spec:
       labels:
         app: html-openshift-app
     spec:
-      resources:
-        requests:
-          cpu: 100m
-          memory: 128Mi
-        limits:
-          cpu: 500m
-          memory: 256Mi
       containers:
       - name: html-openshift-app
+        # ANPASSEN: dein Container-Image (eigene Registry / Tag)
         image: ghcr.io/devin-voegele/html-openshift-app:v1
-        imagePullPolicy: Always
         ports:
         - containerPort: 8080
           protocol: TCP
+        resources:
+          limits:
+            cpu: '2'
+            memory: 200Mi
+          requests:
+            cpu: '1'
+            memory: 100Mi
+        imagePullPolicy: Always
         volumeMounts:
         - name: auftrag-6-2-vol
           mountPath: /tmp
@@ -37,3 +38,57 @@ spec:
       - name: auftrag-6-2-vol
         persistentVolumeClaim:
           claimName: auftrag-6-2
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: html-openshift-app-database
+  labels:
+    app: html-openshift-app
+    app.kubernetes.io/part-of: html-openshift-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: html-openshift-app-database
+  template:
+    metadata:
+      labels:
+        app: html-openshift-app-database
+    spec:
+      volumes:
+      - name: html-openshift-app-database-data
+        persistentVolumeClaim:
+          claimName: html-openshift-app-database-data
+      containers:
+      - name: html-openshift-app-database
+        resources: {}
+        # env-Vars kommen aus dem Secret (100-postgres-secret.yaml).
+        # secretKeyRef.name MUSS = metadata.name des Secrets sein.
+        # secretKeyRef.key MUSS = ein Key unter "data:" im Secret sein.
+        env:
+        - name: POSTGRESQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: html-openshift-app-database
+              key: database-user
+        - name: POSTGRESQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: html-openshift-app-database
+              key: database-password
+        - name: POSTGRESQL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: html-openshift-app-database
+              key: database-name
+        ports:
+        - containerPort: 5432
+          protocol: TCP
+        volumeMounts:
+        - name: html-openshift-app-database-data
+          # mountPath NICHT aendern: Datenverzeichnis des rhel8/postgresql-Images
+          mountPath: /var/lib/pgsql/data
+        # ANPASSEN falls noetig: Image/Tag (rhel8/postgresql-15 braucht Pull-Secret fuer registry.redhat.io)
+        image: 'registry.redhat.io/rhel8/postgresql-15:latest'
+        imagePullPolicy: Always

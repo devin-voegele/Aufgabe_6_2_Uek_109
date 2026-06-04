@@ -14,3 +14,21 @@ spec:
       targetPort: 8080
   selector:
     app: html-openshift-app
+---
+# Service fuer Postgres. Der name (html-openshift-app-database) ist der
+# DNS-Hostname, ueber den die App die DB erreicht -> muss = database-host im Secret sein.
+kind: Service
+apiVersion: v1
+metadata:
+  name: html-openshift-app-database
+  labels:
+    app: html-openshift-app
+    app.kubernetes.io/part-of: html-openshift-app
+spec:
+  ports:
+    - name: html-openshift-app-database
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: html-openshift-app-database

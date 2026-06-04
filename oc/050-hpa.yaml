@@ -4,6 +4,9 @@ apiVersion: autoscaling/v2
 metadata:
   name: html-openshift-app-hpa
   namespace: 264493-zlic-dvoegele001
+  labels:
+    app: html-openshift-app
+    app.kubernetes.io/part-of: html-openshift-app
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -18,3 +21,11 @@ spec:
         target:
           averageUtilization: 80
           type: Utilization
+    # Zum Skalieren auch nach RAM (zusaetzlich zu CPU) diesen Block einkommentieren.
+    # Wichtig: das Deployment muss memory requests/limits gesetzt haben (haben wir).
+    # - type: Resource
+    #   resource:
+    #     name: memory
+    #     target:
+    #       averageUtilization: 80
+    #       type: Utilization

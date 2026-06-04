@@ -12,5 +12,23 @@ spec:
   resources:
     requests:
       storage: 1Gi
+  # ANPASSEN: StorageClass je nach Cluster (oc get storageclass)
+  storageClassName: rbd-storagepool-cluster
+  volumeMode: Filesystem
+---
+# PVC fuer die Postgres-Daten
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: html-openshift-app-database-data
+  labels:
+    app: html-openshift-app-database
+    app.kubernetes.io/part-of: html-openshift-app
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
   storageClassName: rbd-storagepool-cluster
   volumeMode: Filesystem
